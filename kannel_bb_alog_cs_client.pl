@@ -1,4 +1,17 @@
 #!/usr/bin/perl
+#----------------------
+# Script documentation :-
+#----------------------
+# to run this script 
+#   $ tail -F CoreAccess.log | perl kannel_bb_alog_cs_client.pl 
+# this should work directly with kannel.conf have this log-format entry 
+#   [core]
+#   access-log-format = "%l [SMSC:%i] [ACT:%A] [FID:%F] [from:%p] [to:%P] [msg:%L:%b] [META:%D] [udh:%U:%u]"
+# to make it work with other format edit $Pat regex or remove regex and use this alog format
+#   [core]
+#   access-log-format = {"fields":{"time":"%t","message_type":"%l","sender":"%p","receipent":"%P","message":"%b","smsc":"%i","account_name":"%A"},"id":"%F:%I","type":"add"}
+# Edit threshold variable with the value of your throughput per second **recommendation**
+
 use Data::UUID ;
 #use threads ('yield',
               #'stack_size' => 64*4096,
