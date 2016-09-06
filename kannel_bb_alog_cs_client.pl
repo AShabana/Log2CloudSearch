@@ -1,17 +1,4 @@
 #!/usr/bin/perl
-#----------------------
-# Script documentation :-
-#----------------------
-# to run this script 
-#   $ tail -F CoreAccess.log | perl kannel_bb_alog_cs_client.pl 
-# this should work directly with kannel.conf have this log-format entry 
-#   [core]
-#   access-log-format = "%l [SMSC:%i] [ACT:%A] [FID:%F] [from:%p] [to:%P] [msg:%L:%b] [META:%D] [udh:%U:%u]"
-# to make it work with other format edit $Pat regex or remove regex and use this alog format
-#   [core]
-#   access-log-format = {"fields":{"time":"%t","message_type":"%l","sender":"%p","receipent":"%P","message":"%b","smsc":"%i","account_name":"%A"},"id":"%F:%I","type":"add"}
-# Edit threshold variable with the value of your throughput per second **recommendation**
-
 use Data::UUID ;
 #use threads ('yield',
               #'stack_size' => 64*4096,
@@ -30,11 +17,12 @@ $output_file_name = "output.json.";
 $ext_oscillator = 0 ;
 $output_file = "" ;
 $uuid = "";
+$DEBUG=0;
 
 sub cloudsearch_uploader {
         # take file and upload it
         $cmd = "aws cloudsearchdomain  --endpoint-url http://doc-kanneljs-wfvp6oqir5lp7mqhcwmiichulq.us-east-1.cloudsearch.amazonaws.com upload-documents --content-type application/json --documents  $output_file ";
-        print "$cmd \n";
+        print "$cmd \n" if $DEBUG;
         system $cmd;
         system ">  $output_file";
         $count=0;
@@ -61,7 +49,7 @@ sub ofile_add_json{
    $line = @_[0] ;
    $uuid = @_[1] ;
    $type = @_[2] ;
-   #print "line -> $line \ntype -> $type \n" ;
+   print "line -> $line\nuuid -> $uuid\ntype -> $type \n\n\n" if $DEBUG ;
    if ( $line =~ m/$Pat/ ){
         $json = "" ;
         if ( $type == 'sms' ){
@@ -97,7 +85,7 @@ while (<STDIN>)
         if ( substr( $line, 20, 11 ) eq 'Receive DLR') { #/* Receive DLR*/
                 ofile_add_json($line, $uuid, 'dlr') ;
         }else{
-                ofile_add_json($line, 'sms');
+                ofile_add_json($line, $uuid ,'sms');
         }
 }
 
@@ -105,4 +93,4 @@ print $json_line = "{}]" ;
 print OUTPUT $json_line . "\n" ;
 #threads->create( cloudsearch_uploader, $output_file ) ;
 close OUTPUT;
-cloudsearch_uploader() ;
+cloudsearc
